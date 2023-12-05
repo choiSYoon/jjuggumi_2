@@ -7,7 +7,7 @@
 #define DIR_RIGHT	3
 
 void jebi_init(void);
-
+// 푸시 테스트
 int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // 각 플레이어 위치, 이동 주기
 int n_jebi_loc, n_jebi_fail_loc; // 각 제비 위치, 탈락 제비 위치
 int round = 1, now_player = 0; // 라운드, 제비 뽑고 있는 플레이어
