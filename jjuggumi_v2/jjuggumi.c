@@ -5,7 +5,7 @@
 #include <time.h>
 #include "jjuggumi.h"
 
-#define	DATA_FILE	"C:/Users/okok7/OneDrive/바탕 화면/JJUGGUMI-Game-main/jjuggumi.dat"
+#define	DATA_FILE	"jjuggumi.dat"
 
 int jjuggumi_init(void);
 
@@ -99,7 +99,7 @@ int ending(void) {//우승자 출력
 int main(void) {
 	jjuggumi_init();
 	intro();
-	//mugunghwa();
+	mugunghwa();
 	//nightgame();
 	//juldarigi();
 	jebi();
