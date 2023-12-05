@@ -1,0 +1,10 @@
+﻿  canvas.c
+  jebi.c
+C:\Users\okok7\source\repos\jjuggumi_v2\jjuggumi_v2\jebi.c(17,9): warning C4101: 'y' :참조되지 않은 지역 변수입니다.
+C:\Users\okok7\source\repos\jjuggumi_v2\jjuggumi_v2\jebi.c(17,6): warning C4101: 'x' :참조되지 않은 지역 변수입니다.
+  jjuggumi.c
+C:\Users\okok7\source\repos\jjuggumi_v2\jjuggumi_v2\jjuggumi.c(105,2): warning C4013: 'jebi'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
+  keyin.c
+  mugunghwa.c
+  코드를 생성하고 있습니다...
+  jjuggumi_v2.vcxproj -> C:\Users\okok7\source\repos\jjuggumi_v2\x64\Debug\jjuggumi_v2.exe
