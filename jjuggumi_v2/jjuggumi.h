@@ -19,31 +19,30 @@ typedef struct {
 	int id;
 	char name[100];
 
-	// ´É·ÂÄ¡: Áö´É, Èû, ½ºÅÂ¹Ì³ª
+	// ëŠ¥ë ¥ì¹˜: ì§€ëŠ¥, í˜, ìŠ¤íƒœë¯¸ë‚˜
 	int intel, str, stamina;
 
-	// ÇöÀç »óÅÂ
-	bool is_alive; // ±âº»°ª true, Å»¶ôÇÏ¸é false
-	bool hasitem; // ¾ÆÀÌÅÛÀÌ ÀÖÀ¸¸é true
-	ITEM item; // ¾ÆÀÌÅÛ 1°³ ÀåÂø °¡´É
+	// í˜„ì¬ ìƒíƒœ
+	bool is_alive; // ê¸°ë³¸ê°’ true, íƒˆë½í•˜ë©´ false
+	bool hasitem; // ì•„ì´í…œì´ ìˆìœ¼ë©´ true
+	ITEM item; // ì•„ì´í…œ 1ê°œ ì¥ì°© ê°€ëŠ¥
 } PLAYER;
 
 PLAYER player[PLAYER_MAX];
 
-bool player_clear[PLAYER_MAX]; // ±âº»°ª true, Å»¶ôÇÏ¸é false
-bool player_pause; // ±âº»°ª true, ¹Ì´Ï°ÔÀÓÀÌ Á¤ÁöµÇÁö ¾ÊÀ¸¸é false
+bool player_clear[PLAYER_MAX]; // ê¸°ë³¸ê°’ true, íƒˆë½í•˜ë©´ false
+bool player_pause; // ê¸°ë³¸ê°’ true, ë¯¸ë‹ˆê²Œì„ì´ ì •ì§€ë˜ì§€ ì•Šìœ¼ë©´ false
 
 int n_player, n_alive, n_item;
 
-int tick;  // ½Ã°è
+int tick;  // ì‹œê³„
 
-// ¹Ì´Ï°ÔÀÓ
+// ë¯¸ë‹ˆê²Œì„
 //void sample(void);
-//void mugunghwa(void);
-//void mugunghwa(void);
+void mugunghwa(void);
 //void nightgame(void);
 //void juldarigi(void);
-//void jebi(void);
+void jebi(void);
 
 int randint(int low, int high);
 
