@@ -18,7 +18,6 @@ void jebi_init(void) {
 		player_clear[i] = false;
 	}
 	map_init(9, 35);
-	int x, y;
 	for (int i = 0; i < n_alive; i++) {
 		px[i] = 4;
 		py[i] = 2;
@@ -72,7 +71,6 @@ void jebi_reload(void) { //¸Ê ´Ù½Ã·Îµå
 	gotoxy(N_ROW, 0);
 	printf("round %d, turn: player %d", round, now_player);
 	map_init(9, 35);
-	int x, y;
 	for (int i = 0; i < n_alive; i++) {
 		px[i] = 4;
 		py[i] = 2;
