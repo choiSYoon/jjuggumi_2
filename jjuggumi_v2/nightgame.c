@@ -2,6 +2,7 @@
 #include "canvas.h"
 #include "keyin.h"
 #include <stdio.h>
+#include <time.h>
 
 #define DIR_UP		0
 #define DIR_DOWN	1
@@ -18,6 +19,10 @@ void move_night_tail(int i, int nx, int ny);
 
 int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX], prex[PLAYER_MAX], prey[PLAYER_MAX], dead_player[PLAYER_MAX], movable[PLAYER_MAX];  // 각 플레이어 위치, 이동 주기
 int str_intro2 = 0, tagger_front2 = 1, playing_member;
+int ix[ITEM_MAX], iy[ITEM_MAX];
+
+
+
 
 void gamemap_night_init(void) {
 	map_init(9, 35);
@@ -33,6 +38,20 @@ void gamemap_night_init(void) {
 		period[i] = randint(100, 500);
 
 		back_buf[px[i]][py[i]] = '0' + i;  // (0 .. n_player-1)
+	}
+	srand(time(NULL));
+	int rdnum = rand() % 10 + 1;
+	for (int i = 1; i < rdnum; i++) {
+		// 같은 자리가 나오면 다시 생성
+		do {
+			x = randint(1, N_ROW - 2);
+			y = randint(1, N_COL - 2);
+		} while (!placable(x, y));
+		ix[i] = x;
+		iy[i] = y;
+		period[i] = randint(100, 500);
+
+		back_buf[ix[i]][iy[i]] = 'I';  // (0 .. n_player-1)
 	}
 
 	tick = 0;
@@ -119,15 +138,15 @@ void move_night_tail(int player2, int nx, int ny) {
 	}
 }
 
-void night_tagger(void) { // 술래 배치
-	srand((unsigned int)time(NULL));
-
-	// "I"를 무작위로 배치
-	int i_row = rand() % ROW_MAX;
-	int i_col = rand() % COL_MAX;
-
-	back_buf[i_row][i_col] = 'I';
-}
+//void night_tagger(void) { // 술래 배치
+//	srand((unsigned int)time(NULL));
+//
+//	// "I"를 무작위로 배치
+//	int i_row = rand() % ROW_MAX;
+//	int i_col = rand() % COL_MAX;
+//
+//	back_buf[i_row][i_col] = 'I';
+//}
 
 //void night_tagger(int n) {
 //	if (n == 1) {
@@ -215,7 +234,7 @@ void finish_night_line(void) {
 void night_reload(void) { //맵 다시로드
 	system("cls");
 	map_init(9, 35);
-	night_tagger(0);
+	
 	for (int i = 0; i < n_player; i++) {
 		if (player[i].is_alive == true && player_clear[i] == false) {
 			back_buf[px[i]][py[i]] = '0' + i;
@@ -223,21 +242,7 @@ void night_reload(void) { //맵 다시로드
 	}
 }
 
-void comment_night(void) {
-	char intro[] = "\n야간운동";
-	printf("%s", intro);
-	/*f (tick % (str_intro2 < 11 ? 1000 : 200) == 0 && tagger_front2 == 1) {
-		gotoxy(N_ROW, str_intro2);
-		if (intro[str_intro2] < 0) {
-			printf("%c%c", intro[str_intro2], intro[str_intro2 + 1]);
-			str_intro2 += 2;
-		}
-		else {
-			printf("%c", intro[str_intro2]);
-			str_intro2++;
-		}
-	}*/
-}
+
 
 void dead_night_msg(void) {
 	char msg[30] = "player ";
@@ -351,7 +356,8 @@ void start_night_game(void) { //모든 플레이어를 출발선으로 배치, �
 }
 
 void nightgame(void) {
-	start_night_game();
+	gamemap_night_init();
+	dialog("야간운동\n");
 	while (1) {
 		// player 0만 손으로 움직임(4방향)
 		key_t key = get_key();
