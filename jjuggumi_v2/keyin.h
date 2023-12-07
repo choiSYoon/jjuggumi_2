@@ -5,7 +5,7 @@
 // 입력 받는 키 종류
 // 키를 추가/수정할 경우 N_KEY와,
 // keyin.c:is_valid():key_list[]도 함께 수정해야 함
-#define N_KEY		11  // K_UNDEFINED 를 뺀 키 종류
+#define N_KEY		13  // K_UNDEFINED 를 뺀 키 종류
 
 // 참고: #define 대신 enum 구문으로도 구현 가능
 #define K_ARROW		224
@@ -19,6 +19,8 @@
 #define K_SLASH		'/'
 #define K_XKEY		'x'
 #define K_COL		'.'
+#define K_YKEY		'y'
+#define K_NKEY		'n'
 #define K_UNDEFINED	'\0'
 
 typedef int key_t;

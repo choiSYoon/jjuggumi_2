@@ -66,6 +66,9 @@ bool placable(int row, int col) {
 	if (row < 0 || row >= N_ROW ||
 		col < 0 || col >= N_COL ||
 		back_buf[row][col] != ' ') {
+		if (back_buf[row][col] == 'I') {
+			return true;
+		}
 		return false;
 	}
 	return true;

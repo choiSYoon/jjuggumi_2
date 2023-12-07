@@ -98,9 +98,9 @@ int ending(void) {//우승자 출력
 
 int main(void) {
 	jjuggumi_init();
-	intro();
-	mugunghwa();
-	//nightgame();
+	//intro();
+	//mugunghwa();
+	nightgame();
 	juldarigi();
 	jebi();
 

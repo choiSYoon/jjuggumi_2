@@ -2,75 +2,63 @@
 #include "canvas.h"
 #include "keyin.h"
 #include <stdio.h>
-#include <time.h>
-
 
 #define DIR_UP		0
 #define DIR_DOWN	1
 #define DIR_LEFT	2
 #define DIR_RIGHT	3
 
-#define TRUE  1
-#define FALSE 0
+void nightgame_init(void);
+void nightgame_move_manual(key_t key);
+void nightgame_move_random(int i, int dir);
+void nightgame_move_tail(int i, int nx, int ny);
 
-void gamemap_night_init(void);
-void move_night_manual(key_t key);
-void move_night_random(int i, int dir);
-void move_night_tail(int i, int nx, int ny);
-void finish_night_line(void);
+int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // °¢ ÇÃ·¹ÀÌ¾î À§Ä¡, ÀÌµ¿ ÁÖ±â
+int ix[PLAYER_MAX], iy[PLAYER_MAX], item_type[PLAYER_MAX]; // °¢ ¾ÆÀÌÅÛ À§Ä¡, ¾ÆÀÌÅÛ Á¾·ù
 
-void apply_item_effect(int player_index, int item_index);
-
-
-
-void finish_night_line(void);
-int find_item_at_position(int x, int y);
-
-int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX], prex[PLAYER_MAX], prey[PLAYER_MAX], dead_player[PLAYER_MAX], movable[PLAYER_MAX];  // ê° í”Œë ˆì´ì–´ ìœ„ì¹˜, ì´ë™ ì£¼ê¸°
-int str_intro2 = 0, tagger_front2 = 1, playing_member;
-int ix[ITEM_MAX], iy[ITEM_MAX];
-
-
-
-
-void gamemap_night_init(void) {
-	map_init(9, 35);
+void nightgame_init(void) {
+	for (int i = 0; i < n_player; i++) {
+		player_clear[i] = false;
+	}
+	map_init(8, 23);
 	int x, y;
 	for (int i = 0; i < n_player; i++) {
-		// ê°™ì€ ìë¦¬ê°€ ë‚˜ì˜¤ë©´ ë‹¤ì‹œ ìƒì„±
-		do {
-			x = randint(1, N_ROW - 2);
-			y = randint(1, N_COL - 2);
-		} while (!placable(x, y));
-		px[i] = x;
-		py[i] = y;
-		period[i] = randint(100, 500);
+		// °°Àº ÀÚ¸®°¡ ³ª¿À¸é ´Ù½Ã »ı¼º
+		if (player[i].is_alive == true) {
+			do {
+				x = randint(1, N_ROW - 2);
+				y = randint(1, N_COL - 2);
+			} while (!placable(x, y));
+			px[i] = x;
+			py[i] = y;
+			period[i] = randint(100, 500);
 
-		back_buf[px[i]][py[i]] = '0' + i;  // (0 .. n_player-1)
+			back_buf[px[i]][py[i]] = '0' + i;  // (0 .. n_player-1)
+		}
 	}
-	srand(time(NULL));
-	int rdnum = rand() % 10 + 1;
-	for (int i = 1; i < rdnum; i++) {
-		// ê°™ì€ ìë¦¬ê°€ ë‚˜ì˜¤ë©´ ë‹¤ì‹œ ìƒì„±
+
+	for (int i = 0; i < n_alive - 1; i++) {
+		// °°Àº ÀÚ¸®°¡ ³ª¿À¸é ´Ù½Ã »ı¼º
 		do {
 			x = randint(1, N_ROW - 2);
 			y = randint(1, N_COL - 2);
 		} while (!placable(x, y));
 		ix[i] = x;
 		iy[i] = y;
-		period[i] = randint(100, 500);
+		item_type[i] = randint(0, n_item);
 
 		back_buf[ix[i]][iy[i]] = 'I';  // (0 .. n_player-1)
 	}
 
 	tick = 0;
 }
-void move_night_manual(key_t key) {
-	// ê° ë°©í–¥ìœ¼ë¡œ ì›€ì§ì¼ ë•Œ x, yê°’ delta
+
+void nightgame_move_manual(key_t key) {
+	// °¢ ¹æÇâÀ¸·Î ¿òÁ÷ÀÏ ¶§ x, y°ª delta
 	static int dx[4] = { -1, 1, 0, 0 };
 	static int dy[4] = { 0, 0, -1, 1 };
 
-	int dir;  // ì›€ì§ì¼ ë°©í–¥(0~3)
+	int dir;  // ¿òÁ÷ÀÏ ¹æÇâ(0~3)
 	switch (key) {
 	case K_UP: dir = DIR_UP; break;
 	case K_DOWN: dir = DIR_DOWN; break;
@@ -79,7 +67,7 @@ void move_night_manual(key_t key) {
 	default: return;
 	}
 
-	// ì›€ì§ì—¬ì„œ ë†“ì¼ ìë¦¬
+	// ¿òÁ÷¿©¼­ ³õÀÏ ÀÚ¸®
 	int nx, ny;
 	nx = px[0] + dx[dir];
 	ny = py[0] + dy[dir];
@@ -87,259 +75,129 @@ void move_night_manual(key_t key) {
 		return;
 	}
 
-	move_night_tail(0, nx, ny);
-
+	nightgame_move_tail(0, nx, ny);
 }
 
+// 0 <= dir < 4°¡ ¾Æ´Ï¸é ·£´ı
+void nightgame_move_random(int player, int dir) {
+	int p = player;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
+	int nx, ny;  // ¿òÁ÷¿©¼­ ´ÙÀ½¿¡ ³õÀÏ ÀÚ¸®
 
-// 0 <= dir <= 4ê°€ ì•„ë‹ˆë©´ ëœë¤
-void move_night_random(int player, int dir) {
-	int p = player;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
-	int nx, ny;  // ì›€ì§ì—¬ì„œ ë‹¤ìŒì— ë†“ì¼ ìë¦¬
-
-	// ì›€ì§ì¼ ê³µê°„ì´ ì—†ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤ê³  ê°€ì •(ë¬´í•œ ë£¨í”„ì— ë¹ ì§)	
+	// ¿òÁ÷ÀÏ °ø°£ÀÌ ¾ø´Â °æ¿ì´Â ¾ø´Ù°í °¡Á¤(¹«ÇÑ ·çÇÁ¿¡ ºüÁü)	
 
 	do {
-		if (dir == 0) {
-			nx = px[p] + 1;
-			ny = py[p];
-		}
-		else if (dir == 1) {
-			nx = px[p] - 1;
-			ny = py[p];
-		}
-		else if (dir == 2) {
-			nx = px[p];
-			ny = py[p] - 1;
-		}
-		else if (dir == 3) {
-			nx = px[p];
-			ny = py[p] + 1;
-		}
-		else if (dir == 4) {
-			nx = px[p];
-			ny = py[p];
-		}
-		else {
-			nx = px[p] + randint(-1, 1);
-			ny = py[p] + randint(-1, 0);
-
-		}
-
-		if (!placable(nx, ny)) { // ê°€ì•¼í•  ê³µê°„ì´ ì—†ìœ¼ë©´ ëœë¤ìœ¼ë¡œ ë‹¤ì‹œ ì§€ì • ë‹¨ ë’¤ë¡œëŠ” ì—†ìŒ
-			nx = px[p] + randint(-1, 1);
-			ny = py[p] + randint(-1, 0);
-		}
+		// ¾ÆÀÌÅÛ°ú (¾ÆÀÌÅÛÀ» °¡Áø ÇÃ·¹ÀÌ¾î)µé Áß, °¡Àå °¡±î¿î °÷À» ÇâÇØ¼­ ÀÌµ¿
+		nx = px[p] + randint(-1, 1);
+		ny = py[p] + randint(-1, 1);
 	} while (!placable(nx, ny));
-	move_night_tail(p, nx, ny);
+
+	nightgame_move_tail(p, nx, ny);
 }
 
-// back_buf[][]ì— ê¸°ë¡
-void move_night_tail(int player2, int nx, int ny) {
-	int p = player2;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
-	if (player_clear[p] == false && player[p].is_alive == true && player_pause == false) {
-		back_buf[nx][ny] = back_buf[px[p]][py[p]];
-		back_buf[px[p]][py[p]] = ' ';
-		px[p] = nx;
-		py[p] = ny;
-	}
+// back_buf[][]¿¡ ±â·Ï
+void nightgame_move_tail(int player, int nx, int ny) {
+	int p = player;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
+	back_buf[nx][ny] = back_buf[px[p]][py[p]];
+	back_buf[px[p]][py[p]] = ' ';
+	px[p] = nx;
+	py[p] = ny;
 }
 
-
-int random_night_move(void) {
-	int rand_move;
-	rand_move = rand() % 99; //0~99 ëœë¤í•œ ìˆ«ì
-	if (rand_move <= 69) { // 70% í™•ë¥ ë¡œ ì™¼ìª½ìœ¼ë¡œ ì´ë™
-		return 2;
-	}
-	else if (70 <= rand_move && rand_move <= 79) { // 10% í™•ë¥ ë¡œ ìœ„ìª½ìœ¼ë¡œ ì´ë™
-		return 0;
-	}
-	else if (80 <= rand_move && rand_move <= 89) { // 10% í™•ë¥ ë¡œ ì•„ë˜ìª½ìœ¼ë¡œ ì´ë™
-		return 1;
-	}
-	else { // 10% í™•ë¥ ë¡œ ì œìë¦¬
-		return 4;
-	}
+void item_mount(int player1, int num_item) {
+	int p = player1;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
+	player[p].hasitem = true;
+	player[p].item.intel_buf = item[num_item].intel_buf;
+	player[p].item.stamina_buf = item[num_item].stamina_buf;
+	player[p].item.str_buf = item[num_item].str_buf;
 }
 
-
-
-
-
-//void finish_night_line(void) {
-//	for (int i = 0; i < n_player; i++) {
-//		if (1 < prex[i] && prex[i] <= 6 && prey[i] <= 2) {
-//			if (!(prex[i] == 2 && prey[i] == 2 || prex[i] == 6 && prey[i] == 2)) {
-//				if (player_clear[i] == false) {
-//					player_clear[i] = true;
-//					playing_member--;
-//					back_buf[ix[i]][iy[i]] = ' ';
-//				}
-//
-//			}
-//		}
-//	}
-//}
-typedef struct {
-	int intel_effect;
-	int str_effect;
-	int stamina_effect;
-} ITEM_EFFECT;
-
-ITEM_EFFECT item_effects[ITEM_MAX];
-
-void apply_item_effect(int player_index, int item_index) {
-	// ì•„ì´í…œì´ í”Œë ˆì´ì–´ì—ê²Œ ì£¼ëŠ” íš¨ê³¼ ì ìš©
-	movable[player_index] += item_effects[item_index].stamina_effect;
-	// í•„ìš”ì— ë”°ë¼ ë‹¤ë¥¸ ë³€ìˆ˜ë“¤ì— ëŒ€í•´ì„œë„ íš¨ê³¼ ì ìš©
-}
-
-void finish_night_line(void) {
-	for (int i = 0; i < PLAYER_MAX; i++) {
-		if (1 < prex[i] && prex[i] <= 6 && prey[i] <= 2) {
-			if (!(prex[i] == 2 && prey[i] == 2 || prex[i] == 6 && prey[i] == 2)) {
-				if (dead_player[i] == false) {
-					dead_player[i] = true;
-					playing_member--;
-
-					// ë„ì°©í•œ ìœ„ì¹˜ì— ìˆëŠ” ì•„ì´í…œ íš¨ê³¼ ì ìš©
-					int item_index = find_item_at_position(ix[i], iy[i]);
-					if (item_index != -1) {
-						apply_item_effect(i, item_index);
-
-						// ë„ì°©í•œ ìœ„ì¹˜ì— ìˆëŠ” 'I'ë¥¼ ì§€ì›€
-						ix[item_index] = -1;
-						iy[item_index] = -1;
+void nightgame_item_loot(void) {
+	for (int i = 0; i < n_player; i++) {
+		for (int j = 0; j < n_player - 1; j++) {
+			if (px[i] == ix[j] && py[i] == iy[j]) {
+				gotoxy(N_ROW + 2, 0);
+				printf("¾ÆÀÌÅÛ Á¾·ù: %d / x: %d / y: %d", item_type[j], ix[j], iy[j]);
+				
+				if (player[i].hasitem == false) {
+					item_mount(i, j);
+				}
+				else {
+					if (i == 0) {
+						display();
+						gotoxy(N_ROW + 1, 0);
+						printf("¾ÆÀÌÅÛÀ» ±³È¯ÇÏ½Ã°Ú½À´Ï±î? (Y/N)");
+						int key = _getch();
+						if (key == K_YKEY) {
+							item_mount(i, j);
+							gotoxy(N_ROW + 1, 0);
+							printf("                                                                                                         ");
+							display();
+							gotoxy(N_ROW + 1, 0);
+							printf("¾ÆÀÌÅÛÀ» ±³È¯Çß½À´Ï´Ù.");
+						}
+						else if (key != K_YKEY) {
+							gotoxy(N_ROW + 1, 0);
+							printf("                                                                                                         ");
+							display();
+							gotoxy(N_ROW + 1, 0);
+							printf("¾ÆÀÌÅÛÀ» ±³È¯ÇÏÁö ¾Ê¾Ò½À´Ï´Ù.");
+						}
+					}
+					else {
+						int rand_sel = randint(0, 1);
+						if (rand_sel == 0) {
+							item_mount(i, j);
+							gotoxy(N_ROW + 1, 0);
+							printf("                                                                                                         ");
+							display();
+							gotoxy(N_ROW + 1, 0);
+							printf("player %d °¡ ¾ÆÀÌÅÛÀ» ±³È¯Çß½À´Ï´Ù.", i);
+						}
+						else {
+							gotoxy(N_ROW + 1, 0);
+							printf("                                                                                                         ");
+							display();
+							gotoxy(N_ROW + 1, 0);
+							printf("player %d °¡ ¾ÆÀÌÅÛÀ» ±³È¯ÇÏÁö ¾Ê¾Ò½À´Ï´Ù.", i);
+						}
 					}
 				}
+				// ¾ÆÀÌÅÛ ¸ÔÀ¸¸é ±× À§Ä¡¿¡¼­ Á¦°Å
+				ix[j] = 0; 
+				iy[j] = 0;
 			}
 		}
 	}
-}
-
-int find_item_at_position(int x, int y) {
-	// íŠ¹ì • ìœ„ì¹˜ì— ìˆëŠ” ì•„ì´í…œì˜ ì¸ë±ìŠ¤ ì°¾ê¸°
-	for (int i = 0; i < ITEM_MAX; i++) {
-		if (ix[i] == x && iy[i] == y) {
-			return i;
-		}
-	}
-	return -1; // í•´ë‹¹ ìœ„ì¹˜ì— ì•„ì´í…œì´ ì—†ìœ¼ë©´ -1 ë°˜í™˜
-}
-
-
-
-
-
-
-void night_reload(void) { //ë§µ ë‹¤ì‹œë¡œë“œ
-	system("cls");
-	map_init(9, 35);
-
-	for (int i = 0; i < n_player; i++) {
-		if (player[i].is_alive == true && player_clear[i] == false) {
-			back_buf[px[i]][py[i]] = '0' + i;
-		}
-	}
-}
-
-int check_night_movable() {
-	for (int i = 0; i < n_player; ++i) {
-		movable[i] = FALSE;
-	}
-	for (int cur = 0; cur < n_player; cur++) {
-		if (player[cur].is_alive == FALSE) {
-			continue;
-		}
-		for (int other = 0; other < n_player; ++other) {
-			if (player[other].is_alive == FALSE) {
-				continue;
-			}
-			if (cur == other) {
-				continue;
-			}
-			if (py[cur] <= py[other]) {
-				continue;
-			}
-			if (px[cur] == px[other]) {
-				movable[cur] = TRUE;
-				break;
-			}
-		}
-	}
-	return 0;
-}
-
-
-
-void start_night_game(void) { //ëª¨ë“  í”Œë ˆì´ì–´ë¥¼ ì¶œë°œì„ ìœ¼ë¡œ ë°°ì¹˜
-	gamemap_night_init();
-	system("cls");
-	display();
-	playing_member = n_alive;
-	for (int i = 0; i < n_player; i++) {
-		if (n_player >= 7) {
-			move_night_tail(i, 1 + i, 33);
-		}
-		else if (n_player >= 5) {
-			move_night_tail(i, 2 + i, 33);
-		}
-		else if (n_player >= 3) {
-			move_night_tail(i, 3 + i, 33);
-		}
-		else {
-			move_night_tail(i, 4 + i, 33);
-		}
-	}
-
-	dialog("ì•¼ê°„ìš´ë™");
 }
 
 void nightgame(void) {
-	start_night_game();
-	
-	
+	nightgame_init();
+
+	system("cls");
+	display();
 	while (1) {
-		// player 0ë§Œ ì†ìœ¼ë¡œ ì›€ì§ì„(4ë°©í–¥)
+		// player 0¸¸ ¼ÕÀ¸·Î ¿òÁ÷ÀÓ(4¹æÇâ)
 		key_t key = get_key();
 		if (key == K_QUIT) {
 			break;
 		}
-		else if (key != K_UNDEFINED) {
-			move_night_manual(key);
+		else if (key != K_UNDEFINED && player[0].is_alive == true) {
+			nightgame_move_manual(key);
 		}
-
+		nightgame_item_loot();
+		// player 1 ºÎÅÍ´Â ·£´ıÀ¸·Î ¿òÁ÷ÀÓ(8¹æÇâ)
 		for (int i = 1; i < n_player; i++) {
-
-			if (tick % period[i] == 0 && tagger_front2 == 1) { // ë’¤ì— ë³¼ ë•Œ
-				move_night_random(i, random_night_move());
-
-			}
-			else if (tick % period[i] == 0 && tagger_front2 == 0) { // ì•ì— ë³¼ ë•Œ
-				int rand_move;
-				rand_move = rand() % 99; //0~99 ëœë¤í•œ ìˆ«ì
-				if (rand_move < 10) { // 10% í™•ë¥ ë¡œ ì›€ì§ì„
-					move_night_random(i, random_night_move());
-				}
+			if (tick % period[i] == 0 && player[i].is_alive == true) {
+				//nightgame_move_random(i, -1);
 			}
 		}
-		
-		finish_night_line();
+		if (tick % 3000 == 0) {
+			gotoxy(N_ROW + 1, 0);
+			printf("                                                                                                         ");
+		}
+
 		display();
 		Sleep(10);
 		tick += 10;
-		if (tick % 3000 == 0 && tagger_front2 == 0) {
-			tagger_front2 = 1;
-			night_reload();
-		}
-		if (str_intro2 == 22) {
-			str_intro2 = 0;
-			tagger_front2 = 0;
-			tick = 0;
-		}
-		if (n_alive <= 1 || playing_member <= 0) {
-			break;
-		}
 	}
 }
