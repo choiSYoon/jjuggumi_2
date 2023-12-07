@@ -19,41 +19,17 @@ void move_night_random(int i, int dir);
 void move_night_tail(int i, int nx, int ny);
 void finish_night_line(void);
 
+void apply_item_effect(int player_index, int item_index);
+
+
+
+void finish_night_line(void);
+int find_item_at_position(int x, int y);
+
 int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX], prex[PLAYER_MAX], prey[PLAYER_MAX], dead_player[PLAYER_MAX], movable[PLAYER_MAX];  // 각 플레이어 위치, 이동 주기
 int str_intro2 = 0, tagger_front2 = 1, playing_member;
 int ix[ITEM_MAX], iy[ITEM_MAX];
 
-
-
-//void move_toward_item(int player_index) {
-//	int player_row = px[player_index];
-//	int player_col = py[player_index];
-//
-//	int item_row = ix[0];  // 첫 번째 아이템을 대상으로 함
-//	int item_col = iy[0];
-//
-//	int row_diff = item_row - player_row;
-//	int col_diff = item_col - player_col;
-//
-//	if (abs(row_diff) >= abs(col_diff)) {
-//		// 세로로 더 멀리 떨어져 있을 때
-//		if (row_diff > 0) {
-//			move_night_random(player_index, 1); // 아래로 이동
-//		}
-//		else {
-//			move_night_random(player_index, 0); // 위로 이동
-//		}
-//	}
-//	else {
-//		// 가로로 더 멀리 떨어져 있을 때
-//		if (col_diff > 0) {
-//			move_night_random(player_index, 3); // 오른쪽으로 이동
-//		}
-//		else {
-//			move_night_random(player_index, 2); // 왼쪽으로 이동
-//		}
-//	}
-//}
 
 
 
@@ -191,20 +167,71 @@ int random_night_move(void) {
 
 
 
+//void finish_night_line(void) {
+//	for (int i = 0; i < n_player; i++) {
+//		if (1 < prex[i] && prex[i] <= 6 && prey[i] <= 2) {
+//			if (!(prex[i] == 2 && prey[i] == 2 || prex[i] == 6 && prey[i] == 2)) {
+//				if (player_clear[i] == false) {
+//					player_clear[i] = true;
+//					playing_member--;
+//					back_buf[ix[i]][iy[i]] = ' ';
+//				}
+//
+//			}
+//		}
+//	}
+//}
+typedef struct {
+	int intel_effect;
+	int str_effect;
+	int stamina_effect;
+} ITEM_EFFECT;
+
+ITEM_EFFECT item_effects[ITEM_MAX];
+
+void apply_item_effect(int player_index, int item_index) {
+	// 아이템이 플레이어에게 주는 효과 적용
+	movable[player_index] += item_effects[item_index].stamina_effect;
+	// 필요에 따라 다른 변수들에 대해서도 효과 적용
+}
+
 void finish_night_line(void) {
-	for (int i = 0; i < n_player; i++) {
+	for (int i = 0; i < PLAYER_MAX; i++) {
 		if (1 < prex[i] && prex[i] <= 6 && prey[i] <= 2) {
 			if (!(prex[i] == 2 && prey[i] == 2 || prex[i] == 6 && prey[i] == 2)) {
-				if (player_clear[i] == false) {
-					player_clear[i] = true;
+				if (dead_player[i] == false) {
+					dead_player[i] = true;
 					playing_member--;
-					back_buf[ix[i]][iy[i]] = ' ';
-				}
 
+					// 도착한 위치에 있는 아이템 효과 적용
+					int item_index = find_item_at_position(ix[i], iy[i]);
+					if (item_index != -1) {
+						apply_item_effect(i, item_index);
+
+						// 도착한 위치에 있는 'I'를 지움
+						ix[item_index] = -1;
+						iy[item_index] = -1;
+					}
+				}
 			}
 		}
 	}
 }
+
+int find_item_at_position(int x, int y) {
+	// 특정 위치에 있는 아이템의 인덱스 찾기
+	for (int i = 0; i < ITEM_MAX; i++) {
+		if (ix[i] == x && iy[i] == y) {
+			return i;
+		}
+	}
+	return -1; // 해당 위치에 아이템이 없으면 -1 반환
+}
+
+
+
+
+
 
 void night_reload(void) { //맵 다시로드
 	system("cls");
@@ -244,38 +271,9 @@ int check_night_movable() {
 	return 0;
 }
 
-void player_night_move_check(void) {
-	if (tagger_front2 == 1) { //뒤 볼때가 1 앞 보면 0
-		for (int i = 0; i < n_player; i++) {
-			prex[i] = px[i];
-			prey[i] = py[i];
-		}
-	}
-	else {
-		check_night_movable();
-		for (int i = 0; i < n_player; i++) {
-			if (movable[i] == FALSE) {
-				if (px[i] == prex[i] && py[i] == prey[i]) {
-					continue;
-				}
-				if (player[i].is_alive == true) {
-					player[i].is_alive = false;
-					back_buf[px[i]][py[i]] = ' ';
-					display();
-					
-					n_alive--;
-					playing_member--;
-				}
-			}
-			else {
-				prex[i] = px[i];
-				prey[i] = py[i];
-			}
-		}
-	}
-}
 
-void start_night_game(void) { //모든 플레이어를 출발선으로 배치, 술래 배치
+
+void start_night_game(void) { //모든 플레이어를 출발선으로 배치
 	gamemap_night_init();
 	system("cls");
 	display();
@@ -295,13 +293,13 @@ void start_night_game(void) { //모든 플레이어를 출발선으로 배치, �
 		}
 	}
 
-	dialog("곧 게임이 시작됩니다");
+	dialog("야간운동");
 }
 
 void nightgame(void) {
 	start_night_game();
-	gamemap_night_init();
-	dialog("야간운동");
+	
+	
 	while (1) {
 		// player 0만 손으로 움직임(4방향)
 		key_t key = get_key();
@@ -326,7 +324,7 @@ void nightgame(void) {
 				}
 			}
 		}
-		player_night_move_check();
+		
 		finish_night_line();
 		display();
 		Sleep(10);
