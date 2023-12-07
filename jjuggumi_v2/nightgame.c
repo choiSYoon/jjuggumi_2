@@ -17,7 +17,7 @@ void move_night_random(int i, int dir);
 void move_night_tail(int i, int nx, int ny);
 
 int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX], prex[PLAYER_MAX], prey[PLAYER_MAX], dead_player[PLAYER_MAX], movable[PLAYER_MAX];  // 각 플레이어 위치, 이동 주기
-int str_intro = 0, tagger_front = 1, playing_member;
+int str_intro2 = 0, tagger_front2 = 1, playing_member;
 
 void gamemap_night_init(void) {
 	map_init(9, 35);
@@ -59,7 +59,7 @@ void move_night_manual(key_t key) {
 		return;
 	}
 
-	move_tail(0, nx, ny);
+	move_night_tail(0, nx, ny);
 
 }
 
@@ -105,7 +105,7 @@ void move_night_random(int player, int dir) {
 			ny = py[p] + randint(-1, 0);
 		}
 	} while (!placable(nx, ny));
-	move_tail(p, nx, ny);
+	move_night_tail(p, nx, ny);
 }
 
 // back_buf[][]에 기록
@@ -118,6 +118,66 @@ void move_night_tail(int player2, int nx, int ny) {
 		py[p] = ny;
 	}
 }
+
+void night_tagger(void) { // 술래 배치
+	srand((unsigned int)time(NULL));
+
+	// "I"를 무작위로 배치
+	int i_row = rand() % ROW_MAX;
+	int i_col = rand() % COL_MAX;
+
+	back_buf[i_row][i_col] = 'I';
+}
+
+//void night_tagger(int n) {
+//	if (n == 1) {
+//		back_buf[ROW_MAX / 2][COL_MAX / 4] = ' ';
+//		back_buf[ROW_MAX / 2 + 1][COL_MAX / 4] = ' ';
+//		back_buf[ROW_MAX / 2 + 2][COL_MAX / 4] = ' ';
+//	}
+//	else {
+//		back_buf[ROW_MAX / 2][COL_MAX / 4] = ' ';
+//		back_buf[ROW_MAX / 2 + 1][COL_MAX / 4] = ' ';
+//		back_buf[ROW_MAX / 2 + 2][COL_MAX / 4] = ' ';
+//	}
+//}
+//
+//void place_I_randomly() {
+//	// 난수 발생을 위한 시드 설정
+//	srand((unsigned int)time(NULL));
+//
+//	// "I"를 무작위로 배치
+//	int i_row = rand() % ROW_MAX;
+//	int i_col = rand() % COL_MAX;
+//
+//	back_buf[i_row][i_col] = 'I';
+//}
+//
+//int main() {
+//	// 초기화 코드
+//	for (int i = 0; i < ROW_MAX; ++i) {
+//		for (int j = 0; j < COL_MAX; ++j) {
+//			back_buf[i][j] = ' ';
+//		}
+//	}
+//
+//	// 술래 배치 함수 호출
+//	night_tagger(1); // 또는 night_tagger(0);
+//
+//	// "I"를 무작위로 배치 함수 호출
+//	place_I_randomly();
+//
+//	// 결과 출력
+//	for (int i = 0; i < ROW_MAX; ++i) {
+//		for (int j = 0; j < COL_MAX; ++j) {
+//			printf("%c", back_buf[i][j]);
+//		}
+//		printf("\n");
+//	}
+//
+//	return 0;
+//}
+
 
 int random_night_move(void) {
 	int rand_move;
@@ -135,25 +195,163 @@ int random_night_move(void) {
 		return 4;
 	}
 }
-void night_tagger(int n) { // 술래 배치
-	if (n == 1) {
-		back_buf[3][1] = '@';
-		back_buf[4][1] = '@';
-		back_buf[5][1] = '@';
 
+
+void finish_night_line(void) {
+	for (int i = 0; i < n_player; i++) {
+		if (1 < prex[i] && prex[i] <= 6 && prey[i] <= 2) {
+			if (!(prex[i] == 2 && prey[i] == 2 || prex[i] == 6 && prey[i] == 2)) {
+				if (player_clear[i] == false) {
+					player_clear[i] = true;
+					playing_member--;
+					back_buf[prex[i]][prey[i]] = ' ';
+				}
+
+			}
+		}
+	}
+}
+
+void night_reload(void) { //맵 다시로드
+	system("cls");
+	map_init(9, 35);
+	night_tagger(0);
+	for (int i = 0; i < n_player; i++) {
+		if (player[i].is_alive == true && player_clear[i] == false) {
+			back_buf[px[i]][py[i]] = '0' + i;
+		}
+	}
+}
+
+void comment_night(void) {
+	char intro[] = "\n야간운동";
+	printf("%s", intro);
+	/*f (tick % (str_intro2 < 11 ? 1000 : 200) == 0 && tagger_front2 == 1) {
+		gotoxy(N_ROW, str_intro2);
+		if (intro[str_intro2] < 0) {
+			printf("%c%c", intro[str_intro2], intro[str_intro2 + 1]);
+			str_intro2 += 2;
+		}
+		else {
+			printf("%c", intro[str_intro2]);
+			str_intro2++;
+		}
+	}*/
+}
+
+void dead_night_msg(void) {
+	char msg[30] = "player ";
+
+	int msg1 = 7;
+	for (int i = 0; i < n_player; i++) {
+		if (dead_player[i] == true && player[i].is_alive == false) {
+			if (msg1 == 7) {
+				msg[msg1++] = i + '0';
+			}
+			else {
+				msg[msg1++] = ',';
+				msg[msg1++] = ' ';
+				msg[msg1++] = i + '0';
+			}
+		}
+	}
+	msg[msg1++] = ' ';
+	msg[msg1++] = 'd';
+	msg[msg1++] = 'e';
+	msg[msg1++] = 'a';
+	msg[msg1++] = 'd';
+	msg[msg1++] = '!';
+
+	if (msg1 != 13) {
+		dialog(msg);
+	}
+}
+
+int check_night_movable() {
+	for (int i = 0; i < n_player; ++i) {
+		movable[i] = FALSE;
+	}
+	for (int cur = 0; cur < n_player; cur++) {
+		if (player[cur].is_alive == FALSE) {
+			continue;
+		}
+		for (int other = 0; other < n_player; ++other) {
+			if (player[other].is_alive == FALSE) {
+				continue;
+			}
+			if (cur == other) {
+				continue;
+			}
+			if (py[cur] <= py[other]) {
+				continue;
+			}
+			if (px[cur] == px[other]) {
+				movable[cur] = TRUE;
+				break;
+			}
+		}
+	}
+	return 0;
+}
+
+void player_night_move_check(void) {
+	if (tagger_front2 == 1) { //뒤 볼때가 1 앞 보면 0
+		for (int i = 0; i < n_player; i++) {
+			prex[i] = px[i];
+			prey[i] = py[i];
+		}
 	}
 	else {
-		back_buf[3][1] = '#';
-		back_buf[4][1] = '#';
-		back_buf[5][1] = '#';
+		check_movable();
+		for (int i = 0; i < n_player; i++) {
+			if (movable[i] == FALSE) {
+				if (px[i] == prex[i] && py[i] == prey[i]) {
+					continue;
+				}
+				if (player[i].is_alive == true) {
+					player[i].is_alive = false;
+					back_buf[px[i]][py[i]] = ' ';
+					display();
+					dead_player[i] = true;
+					dead_msg();
+					n_alive--;
+					playing_member--;
+				}
+			}
+			else {
+				prex[i] = px[i];
+				prey[i] = py[i];
+			}
+		}
 	}
-
 }
-void nightgame(void) {
+
+void start_night_game(void) { //모든 플레이어를 출발선으로 배치, 술래 배치
 	gamemap_night_init();
 	system("cls");
 	display();
+	playing_member = n_alive;
+	for (int i = 0; i < n_player; i++) {
+		if (n_player >= 7) {
+			move_night_tail(i, 1 + i, 33);
+		}
+		else if (n_player >= 5) {
+			move_night_tail(i, 2 + i, 33);
+		}
+		else if (n_player >= 3) {
+			move_night_tail(i, 3 + i, 33);
+		}
+		else {
+			move_night_tail(i, 4 + i, 33);
+		}
+	}
+	night_tagger();
+
 	dialog("곧 게임이 시작됩니다");
+}
+
+void nightgame(void) {
+	start_night_game();
 	while (1) {
 		// player 0만 손으로 움직임(4방향)
 		key_t key = get_key();
@@ -165,10 +363,10 @@ void nightgame(void) {
 		}
 
 		for (int i = 1; i < n_player; i++) {
-			if (tick % period[i] == 0 && tagger_front == 1) { // 뒤에 볼 때
+			if (tick % period[i] == 0 && tagger_front2 == 1) { // 뒤에 볼 때
 				move_night_random(i, random_night_move());
 			}
-			else if (tick % period[i] == 0 && tagger_front == 0) { // 앞에 볼 때
+			else if (tick % period[i] == 0 && tagger_front2 == 0) { // 앞에 볼 때
 				int rand_move;
 				rand_move = rand() % 99; //0~99 랜덤한 숫자
 				if (rand_move < 10) { // 10% 확률로 움직임
@@ -176,20 +374,20 @@ void nightgame(void) {
 				}
 			}
 		}
-		/*player_move_check();
-		finish_line();
-		comment();*/
+		player_night_move_check();
+		finish_night_line();
+		//comment_night();
 		display();
 		Sleep(10);
 		tick += 10;
-		if (tick % 3000 == 0 && tagger_front == 0) {
-			tagger_front = 1;
-			reload();
+		if (tick % 3000 == 0 && tagger_front2 == 0) {
+			tagger_front2 = 1;
+			night_reload();
 		}
-		if (str_intro == 22) {
-			str_intro = 0;
-			tagger_front = 0;
-			night_tagger(1);
+		if (str_intro2 == 22) {
+			str_intro2 = 0;
+			tagger_front2 = 0;
+			night_tagger();
 			tick = 0;
 		}
 		if (n_alive <= 1 || playing_member <= 0) {
