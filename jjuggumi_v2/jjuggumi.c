@@ -1,4 +1,4 @@
-// 2023-2 °í±ŞÇÁ·Î±×·¡¹Ö °úÁ¦: ÂŞ²Ù¹Ì °ÔÀÓ
+// 2023-2 ê³ ê¸‰í”„ë¡œê·¸ë˜ë° ê³¼ì œ: ì­ˆê¾¸ë¯¸ ê²Œì„
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -9,7 +9,7 @@
 
 int jjuggumi_init(void);
 
-// low ÀÌ»ó high ÀÌÇÏ ³­¼ö¸¦ ¹ß»ı½ÃÅ°´Â ÇÔ¼ö
+// low ì´ìƒ high ì´í•˜ ë‚œìˆ˜ë¥¼ ë°œìƒì‹œí‚¤ëŠ” í•¨ìˆ˜
 int randint(int low, int high) {
 	int rnum = rand() % (high - low + 1) + low;
 	return rnum;
@@ -21,26 +21,26 @@ int jjuggumi_init(void) {
 	fopen_s(&fp, DATA_FILE, "r");
 
 	if (fp == NULL) {
-		return -1; // -1 ¸®ÅÏÇÏ¸é ¸ŞÀÎÇÔ¼ö¿¡¼­ Ã³¸®ÇÏ°í Á¾·á
+		return -1; // -1 ë¦¬í„´í•˜ë©´ ë©”ì¸í•¨ìˆ˜ì—ì„œ ì²˜ë¦¬í•˜ê³  ì¢…ë£Œ
 	}
 
-	// ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ load
+	// í”Œë ˆì´ì–´ ë°ì´í„° load
 	fscanf_s(fp, "%d", &n_player);
 	n_alive = n_player;
 	for (int i = 0; i < n_player; i++) {
-		// ¾ÆÁ÷ ¾È ¹è¿î ¹®¹ı(±¸Á¶Ã¼ Æ÷ÀÎÅÍ, °£Á¢ÂüÁ¶¿¬»êÀÚ)
+		// ì•„ì§ ì•ˆ ë°°ìš´ ë¬¸ë²•(êµ¬ì¡°ì²´ í¬ì¸í„°, ê°„ì ‘ì°¸ì¡°ì—°ì‚°ì)
 		PLAYER* p = &player[i];
-		// ÆÄÀÏ¿¡¼­ °¢ ½ºÅÈ ÃÖ´ñ°ª ÀĞ±â
+		// íŒŒì¼ì—ì„œ ê° ìŠ¤íƒ¯ ìµœëŒ“ê°’ ì½ê¸°
 		fscanf_s(fp, "%s%d%d",
 			p->name, (unsigned int)sizeof(p->name),
 			&(p->intel), &(p->str));
 		p->stamina = 100; // 100%
-		// ÇöÀç »óÅÂ
+		// í˜„ì¬ ìƒíƒœ
 		p->is_alive = true;
 		p->hasitem = false;
 	}
 
-	// ¾ÆÀÌÅÛ µ¥ÀÌÅÍ load
+	// ì•„ì´í…œ ë°ì´í„° load
 	fscanf_s(fp, "%d", &n_item);
 	for (int i = 0; i < n_item; i++) {
 		fscanf_s(fp, "%s%d%d%d",
@@ -50,13 +50,11 @@ int jjuggumi_init(void) {
 			&(item[i].stamina_buf));
 	}
 	fclose(fp);
-	//player[0].hasitem = true;
-	//player[0].item = item[0]; // ÀÓ½Ã·Î ¾ÆÀÌÅÛ °¡Áö°í ÀÖ´ÂÁö Å×½ºÆ®
 	return 0;
 }
 
-int intro(void) { /// ÀÎÆ®·Î ÀÛ¼º, 5ÃÊ ³»·Î ³¡³»±â
-	printf("================ÂŞ²Ù¹Ì °ÔÀÓ================\n");
+int intro(void) { /// ì¸íŠ¸ë¡œ ì‘ì„±, 5ì´ˆ ë‚´ë¡œ ëë‚´ê¸°
+	printf("================ì­ˆê¾¸ë¯¸ ê²Œì„================\n");
 	Sleep(300);
 	printf("         *   *****        *\n");
 	printf("        **  *******        **\n");
@@ -81,17 +79,17 @@ int intro(void) { /// ÀÎÆ®·Î ÀÛ¼º, 5ÃÊ ³»·Î ³¡³»±â
 	return 0;
 }
 
-int ending(void) {//¿ì½ÂÀÚ Ãâ·Â
+int ending(void) {//ìš°ìŠ¹ì ì¶œë ¥
 	int winner = 0;
 	for (int i = 0; i < n_player; i++) {
 		if (player[i].is_alive == true) { winner++; }
 	}
 	if (winner >= 2 || winner == 0) {
-		printf("¿ì½ÂÀÚ¸¦ °¡¸®Áö ¸øÇß½À´Ï´Ù.\n");
+		printf("ìš°ìŠ¹ìë¥¼ ê°€ë¦¬ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.\n");
 	}
 	else {
 		for (int i = 0; i < n_player; i++) {
-			if (player[i].is_alive == true) { printf("¿ì½ÂÀÚ´Â %d ¹ø ÇÃ·¹ÀÌ¾î ÀÔ´Ï´Ù.\n", i); }
+			if (player[i].is_alive == true) { printf("ìš°ìŠ¹ìëŠ” %d ë²ˆ í”Œë ˆì´ì–´ ì…ë‹ˆë‹¤.\n", i); }
 		}
 	}
 
@@ -100,8 +98,8 @@ int ending(void) {//¿ì½ÂÀÚ Ãâ·Â
 
 int main(void) {
 	jjuggumi_init();
-	//intro();
-	//mugunghwa();
+	intro();
+	mugunghwa();
 	//nightgame();
 	juldarigi();
 	jebi();
