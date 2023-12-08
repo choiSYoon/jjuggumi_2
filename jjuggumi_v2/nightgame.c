@@ -13,8 +13,8 @@ void nightgame_move_manual(key_t key);
 void nightgame_move_random(int i, int dir);
 void nightgame_move_tail(int i, int nx, int ny);
 
-int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // °¢ ÇÃ·¹ÀÌ¾î À§Ä¡, ÀÌµ¿ ÁÖ±â
-int ix[PLAYER_MAX], iy[PLAYER_MAX], item_type[PLAYER_MAX]; // °¢ ¾ÆÀÌÅÛ À§Ä¡, ¾ÆÀÌÅÛ Á¾·ù
+int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // ê° í”Œë ˆì´ì–´ ìœ„ì¹˜, ì´ë™ ì£¼ê¸°
+int ix[ITEM_MAX], iy[ITEM_MAX], item_type[ITEM_MAX]; // ê° ì•„ì´í…œ ìœ„ì¹˜, ì•„ì´í…œ ì¢…ë¥˜
 
 void nightgame_init(void) {
 	for (int i = 0; i < n_player; i++) {
@@ -23,7 +23,7 @@ void nightgame_init(void) {
 	map_init(8, 23);
 	int x, y;
 	for (int i = 0; i < n_player; i++) {
-		// °°Àº ÀÚ¸®°¡ ³ª¿À¸é ´Ù½Ã »ı¼º
+		// ê°™ì€ ìë¦¬ê°€ ë‚˜ì˜¤ë©´ ë‹¤ì‹œ ìƒì„±
 		if (player[i].is_alive == true) {
 			do {
 				x = randint(1, N_ROW - 2);
@@ -38,7 +38,7 @@ void nightgame_init(void) {
 	}
 
 	for (int i = 0; i < n_alive - 1; i++) {
-		// °°Àº ÀÚ¸®°¡ ³ª¿À¸é ´Ù½Ã »ı¼º
+		// ê°™ì€ ìë¦¬ê°€ ë‚˜ì˜¤ë©´ ë‹¤ì‹œ ìƒì„±
 		do {
 			x = randint(1, N_ROW - 2);
 			y = randint(1, N_COL - 2);
@@ -54,11 +54,11 @@ void nightgame_init(void) {
 }
 
 void nightgame_move_manual(key_t key) {
-	// °¢ ¹æÇâÀ¸·Î ¿òÁ÷ÀÏ ¶§ x, y°ª delta
+	// ê° ë°©í–¥ìœ¼ë¡œ ì›€ì§ì¼ ë•Œ x, yê°’ delta
 	static int dx[4] = { -1, 1, 0, 0 };
 	static int dy[4] = { 0, 0, -1, 1 };
 
-	int dir;  // ¿òÁ÷ÀÏ ¹æÇâ(0~3)
+	int dir;  // ì›€ì§ì¼ ë°©í–¥(0~3)
 	switch (key) {
 	case K_UP: dir = DIR_UP; break;
 	case K_DOWN: dir = DIR_DOWN; break;
@@ -67,7 +67,7 @@ void nightgame_move_manual(key_t key) {
 	default: return;
 	}
 
-	// ¿òÁ÷¿©¼­ ³õÀÏ ÀÚ¸®
+	// ì›€ì§ì—¬ì„œ ë†“ì¼ ìë¦¬
 	int nx, ny;
 	nx = px[0] + dx[dir];
 	ny = py[0] + dy[dir];
@@ -78,15 +78,15 @@ void nightgame_move_manual(key_t key) {
 	nightgame_move_tail(0, nx, ny);
 }
 
-// 0 <= dir < 4°¡ ¾Æ´Ï¸é ·£´ı
+// 0 <= dir < 4ê°€ ì•„ë‹ˆë©´ ëœë¤
 void nightgame_move_random(int player, int dir) {
-	int p = player;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
-	int nx, ny;  // ¿òÁ÷¿©¼­ ´ÙÀ½¿¡ ³õÀÏ ÀÚ¸®
+	int p = player;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
+	int nx, ny;  // ì›€ì§ì—¬ì„œ ë‹¤ìŒì— ë†“ì¼ ìë¦¬
 
-	// ¿òÁ÷ÀÏ °ø°£ÀÌ ¾ø´Â °æ¿ì´Â ¾ø´Ù°í °¡Á¤(¹«ÇÑ ·çÇÁ¿¡ ºüÁü)	
+	// ì›€ì§ì¼ ê³µê°„ì´ ì—†ëŠ” ê²½ìš°ëŠ” ì—†ë‹¤ê³  ê°€ì •(ë¬´í•œ ë£¨í”„ì— ë¹ ì§)	
 
 	do {
-		// ¾ÆÀÌÅÛ°ú (¾ÆÀÌÅÛÀ» °¡Áø ÇÃ·¹ÀÌ¾î)µé Áß, °¡Àå °¡±î¿î °÷À» ÇâÇØ¼­ ÀÌµ¿
+		// ì•„ì´í…œê³¼ (ì•„ì´í…œì„ ê°€ì§„ í”Œë ˆì´ì–´)ë“¤ ì¤‘, ê°€ì¥ ê°€ê¹Œìš´ ê³³ì„ í–¥í•´ì„œ ì´ë™
 		nx = px[p] + randint(-1, 1);
 		ny = py[p] + randint(-1, 1);
 	} while (!placable(nx, ny));
@@ -94,9 +94,9 @@ void nightgame_move_random(int player, int dir) {
 	nightgame_move_tail(p, nx, ny);
 }
 
-// back_buf[][]¿¡ ±â·Ï
+// back_buf[][]ì— ê¸°ë¡
 void nightgame_move_tail(int player, int nx, int ny) {
-	int p = player;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
+	int p = player;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
 	back_buf[nx][ny] = back_buf[px[p]][py[p]];
 	back_buf[px[p]][py[p]] = ' ';
 	px[p] = nx;
@@ -104,7 +104,7 @@ void nightgame_move_tail(int player, int nx, int ny) {
 }
 
 void item_mount(int player1, int num_item) {
-	int p = player1;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
+	int p = player1;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
 	player[p].hasitem = true;
 	player[p].item.intel_buf = item[num_item].intel_buf;
 	player[p].item.stamina_buf = item[num_item].stamina_buf;
@@ -116,7 +116,7 @@ void nightgame_item_loot(void) {
 		for (int j = 0; j < n_player - 1; j++) {
 			if (px[i] == ix[j] && py[i] == iy[j]) {
 				gotoxy(N_ROW + 2, 0);
-				printf("¾ÆÀÌÅÛ Á¾·ù: %d / x: %d / y: %d", item_type[j], ix[j], iy[j]);
+				printf("ì•„ì´í…œ ì¢…ë¥˜: %d / x: %d / y: %d", item_type[j], ix[j], iy[j]);
 				
 				if (player[i].hasitem == false) {
 					item_mount(i, j);
@@ -125,7 +125,7 @@ void nightgame_item_loot(void) {
 					if (i == 0) {
 						display();
 						gotoxy(N_ROW + 1, 0);
-						printf("¾ÆÀÌÅÛÀ» ±³È¯ÇÏ½Ã°Ú½À´Ï±î? (Y/N)");
+						printf("ì•„ì´í…œì„ êµí™˜í•˜ì‹œê² ìŠµë‹ˆê¹Œ? (Y/N)");
 						int key = _getch();
 						if (key == K_YKEY) {
 							item_mount(i, j);
@@ -133,14 +133,14 @@ void nightgame_item_loot(void) {
 							printf("                                                                                                         ");
 							display();
 							gotoxy(N_ROW + 1, 0);
-							printf("¾ÆÀÌÅÛÀ» ±³È¯Çß½À´Ï´Ù.");
+							printf("ì•„ì´í…œì„ êµí™˜í–ˆìŠµë‹ˆë‹¤.");
 						}
 						else if (key != K_YKEY) {
 							gotoxy(N_ROW + 1, 0);
 							printf("                                                                                                         ");
 							display();
 							gotoxy(N_ROW + 1, 0);
-							printf("¾ÆÀÌÅÛÀ» ±³È¯ÇÏÁö ¾Ê¾Ò½À´Ï´Ù.");
+							printf("ì•„ì´í…œì„ êµí™˜í•˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
 						}
 					}
 					else {
@@ -151,18 +151,18 @@ void nightgame_item_loot(void) {
 							printf("                                                                                                         ");
 							display();
 							gotoxy(N_ROW + 1, 0);
-							printf("player %d °¡ ¾ÆÀÌÅÛÀ» ±³È¯Çß½À´Ï´Ù.", i);
+							printf("player %d ê°€ ì•„ì´í…œì„ êµí™˜í–ˆìŠµë‹ˆë‹¤.", i);
 						}
 						else {
 							gotoxy(N_ROW + 1, 0);
 							printf("                                                                                                         ");
 							display();
 							gotoxy(N_ROW + 1, 0);
-							printf("player %d °¡ ¾ÆÀÌÅÛÀ» ±³È¯ÇÏÁö ¾Ê¾Ò½À´Ï´Ù.", i);
+							printf("player %d ê°€ ì•„ì´í…œì„ êµí™˜í•˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.", i);
 						}
 					}
 				}
-				// ¾ÆÀÌÅÛ ¸ÔÀ¸¸é ±× À§Ä¡¿¡¼­ Á¦°Å
+				// ì•„ì´í…œ ë¨¹ìœ¼ë©´ ê·¸ ìœ„ì¹˜ì—ì„œ ì œê±°
 				ix[j] = 0; 
 				iy[j] = 0;
 			}
@@ -176,7 +176,7 @@ void nightgame(void) {
 	system("cls");
 	display();
 	while (1) {
-		// player 0¸¸ ¼ÕÀ¸·Î ¿òÁ÷ÀÓ(4¹æÇâ)
+		// player 0ë§Œ ì†ìœ¼ë¡œ ì›€ì§ì„(4ë°©í–¥)
 		key_t key = get_key();
 		if (key == K_QUIT) {
 			break;
@@ -185,7 +185,7 @@ void nightgame(void) {
 			nightgame_move_manual(key);
 		}
 		nightgame_item_loot();
-		// player 1 ºÎÅÍ´Â ·£´ıÀ¸·Î ¿òÁ÷ÀÓ(8¹æÇâ)
+		// player 1 ë¶€í„°ëŠ” ëœë¤ìœ¼ë¡œ ì›€ì§ì„(8ë°©í–¥)
 		for (int i = 1; i < n_player; i++) {
 			if (tick % period[i] == 0 && player[i].is_alive == true) {
 				//nightgame_move_random(i, -1);
