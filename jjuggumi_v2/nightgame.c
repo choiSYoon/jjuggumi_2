@@ -13,7 +13,7 @@ void nightgame_move_manual(key_t key);
 void nightgame_move_random(int i, int dir);
 void nightgame_move_tail(int i, int nx, int ny);
 
-int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // 각 플레이어 위치, 이동 주기
+int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX], p_num_item[PLAYER_MAX];  // 각 플레이어 위치, 이동 주기, 소지한 아이템 번호
 int ix[ITEM_MAX], iy[ITEM_MAX], item_type[ITEM_MAX]; // 각 아이템 위치, 아이템 종류
 
 void nightgame_init(void) {
@@ -106,9 +106,19 @@ void nightgame_move_tail(int player, int nx, int ny) {
 void item_mount(int player1, int num_item) {
 	int p = player1;  // 이름이 길어서...
 	player[p].hasitem = true;
+	p_num_item[p] = num_item;
 	player[p].item.intel_buf = item[num_item].intel_buf;
 	player[p].item.stamina_buf = item[num_item].stamina_buf;
 	player[p].item.str_buf = item[num_item].str_buf;
+}
+
+void item_unmount(int player1) {
+	int p = player1;  // 이름이 길어서...
+	player[p].hasitem = false;
+	p_num_item[p] = -1;
+	player[p].item.intel_buf = 0;
+	player[p].item.stamina_buf = 0;
+	player[p].item.str_buf = 0;
 }
 
 void nightgame_item_loot(void) {
@@ -170,12 +180,154 @@ void nightgame_item_loot(void) {
 	}
 }
 
+void player_loc_check(void) {
+	int key;
+	for (int i = 0; i < n_player; i++) {
+		for (int j = 0; j < n_player; j++) {
+			if (px[i] == px[j] && py[i] == py[j] + 1 || px[i] == px[j] + 1 && py[i] == py[j] || px[i] == px[j] - 1 && py[i] == py[j] || px[i] == px[j] && py[i] == py[j] - 1) {
+				if (i == 0) {
+					gotoxy(N_ROW + 1, 0);
+					printf("player %d 을/를 마주쳤습니다 (1: 강탈 / 2: 회유 / 3: 무시)", j);
+					key = _getch();
+				}
+				else {
+					int tmp = randint(1, 3);
+					key = '0' + tmp;
+				}
+				if (key == '1') {
+					//강탈
+					if (player[i].stamina != 0) { // 스태미나가 0만 아니면
+						if (player[i].stamina > player[j].stamina) { // 스태미나 많음
+							if (player[i].hasitem == true) {
+								if (player[j].hasitem == true) { //둘 다 아이템 소지
+									int tmp = p_num_item[i];
+									item_mount(i, p_num_item[j]);
+									item_mount(j, tmp);
+									if (player[i].stamina - 40 < 0) {
+										player[i].stamina = 0;
+									}
+									else {
+										player[i].stamina -= 40;
+									}
+								}
+								else { // i만 아이템 소지
+									if (player[i].stamina - 40 < 0) {
+										player[i].stamina = 0;
+									}
+									else {
+										player[i].stamina -= 40;
+									}
+								}
+							}
+							else {
+								if (player[j].hasitem == true) { // j만 아이템 소지
+									item_mount(i, p_num_item[j]);
+									item_unmount(j);
+									if (player[i].stamina - 40 < 0) {
+										player[i].stamina = 0;
+									}
+									else {
+										player[i].stamina -= 40;
+									}
+								}
+								else { // 둘 다 아이템 없음
+									if (player[i].stamina - 40 < 0) {
+										player[i].stamina = 0;
+									}
+									else {
+										player[i].stamina -= 40;
+									}
+								}
+							}
+						}
+						else { // 스태미나 이슈 실패
+							if (player[i].stamina - 60 < 0) {
+								player[i].stamina = 0;
+							}
+							else {
+								player[i].stamina -= 60;
+							}
+						}
+					}
+				}
+				else if (key == '2') {
+					//회유
+					if (player[i].stamina != 0) {
+						if (player[i].intel > player[j].intel) {
+							if (player[i].hasitem == true) {
+								if (player[j].hasitem == true) {
+									int tmp = p_num_item[i];
+									item_mount(i, p_num_item[j]);
+									item_mount(j, tmp);
+									if (player[i].stamina - 20 < 0) {
+										player[i].stamina = 0;
+									}
+									else {
+										player[i].stamina -= 20;
+									}
+								}
+								else {
+									if (player[i].stamina - 20 < 0) {
+										player[i].stamina = 0;
+									}
+									else {
+										player[i].stamina -= 20;
+									}
+								}
+							}
+							else {
+								if (player[j].hasitem == true) {
+									item_mount(i, p_num_item[j]);
+									item_unmount(j);
+									if (player[i].stamina - 20 < 0) {
+										player[i].stamina = 0;
+									}
+									else {
+										player[i].stamina -= 20;
+									}
+								}
+								else {
+									if (player[i].stamina - 20 < 0) {
+										player[i].stamina = 0;
+									}
+									else {
+										player[i].stamina -= 20;
+									}
+								}
+							}
+						}
+						else {
+							if (player[i].stamina - 40 < 0) {
+								player[i].stamina = 0;
+							}
+							else {
+								player[i].stamina -= 40;
+							}
+						}
+					}
+				}
+				else if (key == '3') {
+					//무시
+				}
+				else {
+					player_loc_check();
+				}
+			}
+		}
+	}
+	display();
+}
+
+
 void nightgame(void) {
 	nightgame_init();
 
+	item_mount(1, 4);
 	system("cls");
 	display();
 	while (1) {
+		gotoxy(N_ROW + 3, 0);
+		printf("%d", p_num_item[0]);
 		// player 0만 손으로 움직임(4방향)
 		key_t key = get_key();
 		if (key == K_QUIT) {
@@ -185,12 +337,18 @@ void nightgame(void) {
 			nightgame_move_manual(key);
 		}
 		nightgame_item_loot();
+		
+		if (tick % 1000 == 0) {
+			player_loc_check();
+		}
+
 		// player 1 부터는 랜덤으로 움직임(8방향)
 		for (int i = 1; i < n_player; i++) {
 			if (tick % period[i] == 0 && player[i].is_alive == true) {
 				//nightgame_move_random(i, -1);
 			}
 		}
+
 		if (tick % 3000 == 0) {
 			gotoxy(N_ROW + 1, 0);
 			printf("                                                                                                         ");
