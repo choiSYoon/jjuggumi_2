@@ -8,10 +8,10 @@
 
 void jebi_init(void);
 
-int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // °¢ ÇÃ·¹ÀÌ¾î À§Ä¡, ÀÌµ¿ ÁÖ±â
-int jebi_selected[PLAYER_MAX]; // ¼±ÅÃµÈ Á¦ºñ
-int n_jebi_loc, n_jebi_fail_loc; // °¢ Á¦ºñ À§Ä¡, Å»¶ô Á¦ºñ À§Ä¡
-int round = 1, now_player = 0; // ¶ó¿îµå, Á¦ºñ »Ì°í ÀÖ´Â ÇÃ·¹ÀÌ¾î
+int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // ê° í”Œë ˆì´ì–´ ìœ„ì¹˜, ì´ë™ ì£¼ê¸°
+int jebi_selected[PLAYER_MAX]; // ì„ íƒëœ ì œë¹„
+int n_jebi_loc, n_jebi_fail_loc; // ê° ì œë¹„ ìœ„ì¹˜, íƒˆë½ ì œë¹„ ìœ„ì¹˜
+int round = 1, now_player = 0; // ë¼ìš´ë“œ, ì œë¹„ ë½‘ê³  ìˆëŠ” í”Œë ˆì´ì–´
 
 void jebi_init(void) {
 	for (int i = 0; i < n_player; i++) {
@@ -42,7 +42,7 @@ void mark_jebi(int jebi_loc) {
 int selected_jebi(int jebi_loc) {
 	for (int i = 0; i < n_alive; i++) {
 		if (jebi_selected[i] == jebi_loc) {
-			return 1; // ÀÌ¹Ì ¼±ÅÃµÈ Á¦ºñ
+			return 1; // ì´ë¯¸ ì„ íƒëœ ì œë¹„
 		}
 	}
 	return 0;
@@ -65,7 +65,7 @@ void jebi_map(void) {
 	printf("round %d, turn: player %d", round, now_player);
 }
 
-void jebi_reload(void) { //¸Ê ´Ù½Ã·Îµå
+void jebi_reload(void) { //ë§µ ë‹¤ì‹œë¡œë“œ
 	system("cls");
 	map_init(9, 35);
 	gotoxy(N_ROW, 0);
@@ -111,7 +111,7 @@ void jebi_newround(void) {
 }
 
 void move_jebi_tail(int player2, int nx, int ny) {
-	int p = player2;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
+	int p = player2;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
 	back_buf[nx][ny] = back_buf[px[p]][py[p]];
 	if (selected_jebi(py[p])) {
 		back_buf[px[p]][py[p]] = '!';
@@ -124,17 +124,17 @@ void move_jebi_tail(int player2, int nx, int ny) {
 }
 
 void move_jebi_manual(key_t key) {
-	// °¢ ¹æÇâÀ¸·Î ¿òÁ÷ÀÏ ¶§ x, y°ª delta
+	// ê° ë°©í–¥ìœ¼ë¡œ ì›€ì§ì¼ ë•Œ x, yê°’ delta
 	static int dy[4] = { 0, 0, -2, 2 };
 
-	int dir;  // ¿òÁ÷ÀÏ ¹æÇâ(0~3)
+	int dir;  // ì›€ì§ì¼ ë°©í–¥(0~3)
 	switch (key) {
 	case K_LEFT: dir = DIR_LEFT; break;
 	case K_RIGHT: dir = DIR_RIGHT; break;
 	default: return;
 	}
 
-	// ¿òÁ÷¿©¼­ ³õÀÏ ÀÚ¸®
+	// ì›€ì§ì—¬ì„œ ë†“ì¼ ìë¦¬
 	int nx, ny;
 	nx = 4;
 	ny = py[0] + dy[dir];
@@ -145,8 +145,8 @@ void move_jebi_manual(key_t key) {
 }
 
 void jebi_random(int player) {
-	int p = player;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
-	int tmp, nx, ny;  // ¿òÁ÷¿©¼­ ´ÙÀ½¿¡ ³õÀÏ ÀÚ¸®
+	int p = player;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
+	int tmp, nx, ny;  // ì›€ì§ì—¬ì„œ ë‹¤ìŒì— ë†“ì¼ ìë¦¬
 
 	do {
 		tmp = randint(0, n_alive - 1);
@@ -154,8 +154,6 @@ void jebi_random(int player) {
 		ny = 2 + (tmp * 2);
 	} while (selected_jebi(ny) != 0);
 	move_jebi_tail(p, nx, ny);
-	gotoxy(N_ROW + 2, 0);
-	printf("%d", ny);
 }
 
 void jebi_select(int key) {
@@ -189,11 +187,11 @@ void jebi(void) {
 	jebi_init();
 	system("cls");
 	display();
-	dialog("°ğ °ÔÀÓÀÌ ½ÃÀÛµË´Ï´Ù");
+	dialog("ê³§ ê²Œì„ì´ ì‹œì‘ë©ë‹ˆë‹¤");
 	jebi_round();
 	jebi_map();
 	while (1) {
-		// player 0¸¸ ¼ÕÀ¸·Î ¿òÁ÷ÀÓ(4¹æÇâ)
+		// player 0ë§Œ ì†ìœ¼ë¡œ ì›€ì§ì„(4ë°©í–¥)
 		key_t key = get_key();
 		if (key == K_QUIT) {
 			break;
@@ -205,7 +203,7 @@ void jebi(void) {
 			}
 		}
 
-		// player 1 ºÎÅÍ´Â ·£´ıÀ¸·Î ¿òÁ÷ÀÓ(8¹æÇâ)
+		// player 1 ë¶€í„°ëŠ” ëœë¤ìœ¼ë¡œ ì›€ì§ì„(8ë°©í–¥)
 		for (int i = 1; i < n_player; i++) {
 			if (now_player == i && player[i].is_alive == false) {
 				now_player += 1;
