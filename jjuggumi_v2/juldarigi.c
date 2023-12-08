@@ -11,21 +11,21 @@
 void juldarigi_init(void);
 void juldarigi_move_tail(int i, int nx, int ny);
 
-int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // °¢ ÇÃ·¹ÀÌ¾î À§Ä¡, ÀÌµ¿ ÁÖ±â
-int even_str = 0, odd_str = 0, even_player = 0, odd_player = 0, r_stop = 0, l_stop = 0, even_lay = 0, odd_lay = 0;// Â¦¼öÆÀ ÈûÀÇ ÇÕ, È¦¼öÆÀ ÈûÀÇ ÇÕ
+int px[PLAYER_MAX], py[PLAYER_MAX], period[PLAYER_MAX];  // ê° í”Œë ˆì´ì–´ ìœ„ì¹˜, ì´ë™ ì£¼ê¸°
+int even_str = 0, odd_str = 0, even_player = 0, odd_player = 0, r_stop = 0, l_stop = 0, even_lay = 0, odd_lay = 0;// ì§ìˆ˜íŒ€ í˜ì˜ í•©, í™€ìˆ˜íŒ€ í˜ì˜ í•©
 float sum_str = 0, tmp_str = 0;
 int n_dead[PLAYER_MAX];
 
 void juldarigi_init(void) {
 	juldarigi_playing = true;
-	juldarigi_map_init(3, 31); // #À¸·Î ¸Ê ±×¸®±â
-	back_buf[0][15] = ' '; // Áß°£¿¡ ±¸¸Û ¶Õ±â
+	juldarigi_map_init(3, 31); // #ìœ¼ë¡œ ë§µ ê·¸ë¦¬ê¸°
+	back_buf[0][15] = ' '; // ì¤‘ê°„ì— êµ¬ë© ëš«ê¸°
 	back_buf[2][15] = ' ';
 
-	for (int i = 0; i < 3; i++) { // °¡¿îµ¥ ÁÙ ±×¸®±â
+	for (int i = 0; i < 3; i++) { // ê°€ìš´ë° ì¤„ ê·¸ë¦¬ê¸°
 		back_buf[1][14 + i] = '-';
 	}
-	int even_y = 13, odd_y = 17; // Â¦¼ö¹øÂ° ÇÃ·¹ÀÌ¾î, È¦¼ö¹øÂ° ÇÃ·¹ÀÌ¾î
+	int even_y = 13, odd_y = 17; // ì§ìˆ˜ë²ˆì§¸ í”Œë ˆì´ì–´, í™€ìˆ˜ë²ˆì§¸ í”Œë ˆì´ì–´
 	for (int i = 0; i < n_player; i++) {
 		px[i] = 1;
 		if (i % 2 == 0) {
@@ -63,9 +63,9 @@ void juldarigi_str(void) {
 	sum_str = even_str - odd_str;
 }
 
-// back_buf[][]¿¡ ±â·Ï
+// back_buf[][]ì— ê¸°ë¡
 void juldarigi_move_tail(int player, int nx, int ny) {
-	int p = player;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
+	int p = player;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
 	back_buf[nx][ny] = back_buf[px[p]][py[p]];
 	back_buf[px[p]][py[p]] = ' ';
 	px[p] = nx;
@@ -73,17 +73,17 @@ void juldarigi_move_tail(int player, int nx, int ny) {
 }
 
 void juldarigi_line_move_tail(int player, int nx, int ny) {
-	int p = player;  // ÀÌ¸§ÀÌ ±æ¾î¼­...
+	int p = player;  // ì´ë¦„ì´ ê¸¸ì–´ì„œ...
 	back_buf[nx][ny] = back_buf[px[p]][py[p]];
 	back_buf[px[p]][py[p]] = '-';
 	px[p] = nx;
 	py[p] = ny;
 }
 
-void juldarigi_right(int move) { // ÁÙ ¿À¸¥ÂÊÀ¸·Î ¿òÁ÷ÀÌ±â
-	r_stop = 0; //¿ŞÂÊ ¿òÁ÷ÀÓ ¸ØÃã
-	for (int i = 0; i < n_player; i++) { // Â¦¼ö ÇÃ·¹ÀÌ¾î Á¦¾î
-		// ¾î¶² ÇÃ·¹ÀÌ¾î°¡ 14¿¡ µµÂøÇÏ¸é ¿À¸¥ÂÊ ÇÃ·¹ÀÌ¾îÀÇ ¿òÁ÷ÀÓ ¸ØÃã
+void juldarigi_right(int move) { // ì¤„ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì›€ì§ì´ê¸°
+	r_stop = 0; //ì™¼ìª½ ì›€ì§ì„ ë©ˆì¶¤
+	for (int i = 0; i < n_player; i++) { // ì§ìˆ˜ í”Œë ˆì´ì–´ ì œì–´
+		// ì–´ë–¤ í”Œë ˆì´ì–´ê°€ 14ì— ë„ì°©í•˜ë©´ ì˜¤ë¥¸ìª½ í”Œë ˆì´ì–´ì˜ ì›€ì§ì„ ë©ˆì¶¤
 		if (i % 2 == 0 && n_dead[i] == 0) {
 			if (py[i] == 14) {
 				back_buf[px[i]][py[i]] = '-';
@@ -92,17 +92,17 @@ void juldarigi_right(int move) { // ÁÙ ¿À¸¥ÂÊÀ¸·Î ¿òÁ÷ÀÌ±â
 			juldarigi_move_tail(i, px[i], py[i] + move);
 		}
 	}
-	for (int i = n_player - 1; i >= 0; i--) { // È¦¼ö ÇÃ·¹ÀÌ¾î Á¦¾î
+	for (int i = n_player - 1; i >= 0; i--) { // í™€ìˆ˜ í”Œë ˆì´ì–´ ì œì–´
 		if (i % 2 != 0 && n_dead[i] == 0 && r_stop == 0) {
 			juldarigi_line_move_tail(i, px[i], py[i] + move);
 		}
 	}
 }
 
-void juldarigi_left(int move) { // ÁÙ ¿ŞÂÊÀ¸·Î ¿òÁ÷ÀÌ±â
-	l_stop = 0; //¿À¸¥ÂÊ ¿òÁ÷ÀÓ ¸ØÃã
-	for (int i = 0; i < n_player; i++) { // Â¦¼ö ÇÃ·¹ÀÌ¾î Á¦¾î
-		// ¾î¶² ÇÃ·¹ÀÌ¾î°¡ 16¿¡ µµÂøÇÏ¸é ¿À¸¥ÂÊ ÇÃ·¹ÀÌ¾îÀÇ ¿òÁ÷ÀÓ ¸ØÃã
+void juldarigi_left(int move) { // ì¤„ ì™¼ìª½ìœ¼ë¡œ ì›€ì§ì´ê¸°
+	l_stop = 0; //ì˜¤ë¥¸ìª½ ì›€ì§ì„ ë©ˆì¶¤
+	for (int i = 0; i < n_player; i++) { // ì§ìˆ˜ í”Œë ˆì´ì–´ ì œì–´
+		// ì–´ë–¤ í”Œë ˆì´ì–´ê°€ 16ì— ë„ì°©í•˜ë©´ ì˜¤ë¥¸ìª½ í”Œë ˆì´ì–´ì˜ ì›€ì§ì„ ë©ˆì¶¤
 		if (i % 2 != 0 && n_dead[i] == 0) {
 			if (py[i] == 16) {
 				back_buf[px[i]][py[i]] = '-';
@@ -111,7 +111,7 @@ void juldarigi_left(int move) { // ÁÙ ¿ŞÂÊÀ¸·Î ¿òÁ÷ÀÌ±â
 			juldarigi_move_tail(i, px[i], py[i] - move);
 		}
 	}
-	for (int i = n_player - 1; i >= 0; i--) { // È¦¼ö ÇÃ·¹ÀÌ¾î Á¦¾î
+	for (int i = n_player - 1; i >= 0; i--) { // í™€ìˆ˜ í”Œë ˆì´ì–´ ì œì–´
 		if (i % 2 == 0 && n_dead[i] == 0 && l_stop == 0) {
 			juldarigi_line_move_tail(i, px[i], py[i] - move);
 		}
@@ -163,7 +163,7 @@ void juldarigi(void) {
 	while (1) {
 		gotoxy(N_ROW + 2, 0);
 		printf("str: %5.1f", sum_str);
-		// player 0¸¸ ¼ÕÀ¸·Î ¿òÁ÷ÀÓ(4¹æÇâ)
+		// player 0ë§Œ ì†ìœ¼ë¡œ ì›€ì§ì„(4ë°©í–¥)
 		key_t key = get_key();
 		if (key == K_QUIT || even_player == 0 || odd_player == 0) {
 			break;
@@ -180,7 +180,13 @@ void juldarigi(void) {
 			even_str *= 2;
 			for (int i = 0; i < n_player; i++) {
 				if (i % 2 == 0) {
-					player[i].stamina = (player[i].stamina / 100) * 30;
+					if (player[i].stamina - 30 < 0) {
+						player[i].stamina = 0;
+					}
+					else {
+						player[i].stamina - 30;
+					}
+					
 				}
 			}
 			even_lay = 1;
@@ -190,18 +196,23 @@ void juldarigi(void) {
 			odd_str *= 2;
 			for (int i = 0; i < n_player; i++) {
 				if (i % 2 != 0) {
-					player[i].stamina = (player[i].stamina / 100) * 30;
+					if (player[i].stamina - 30 < 0) {
+						player[i].stamina = 0;
+					}
+					else {
+						player[i].stamina - 30;
+					}
 				}
 			}
 			odd_lay = 1;
 			juldarigi_check();
 		}
-		if (tick % 3000 == 0) { // 3ÃÊ¸¶´Ù
+		if (tick % 3000 == 0) { // 3ì´ˆë§ˆë‹¤
 			tmp_str = 0;
 			sum_str = even_str - odd_str;
 		}
 		
-		if (tick % 1000 == 0) { // 1ÃÊ¸¶´Ù
+		if (tick % 1000 == 0) { // 1ì´ˆë§ˆë‹¤
 			if (sum_str >= 0) {
 				if (odd_lay == 1 || even_lay == 1) { 
 					juldarigi_right(2); 
